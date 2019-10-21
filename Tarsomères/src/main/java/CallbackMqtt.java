@@ -20,7 +20,7 @@ public class CallbackMqtt implements MqttCallback {
         super();
         this.influxDB = influxDB;
         try {
-            mqttClient = new MqttClient("tcp://192.168.20.112:8123", MqttClient.generateClientId());
+            mqttClient = new MqttClient("tcp://192.168.20.110:8123", MqttClient.generateClientId());
             mqttClient.setCallback(this);
             mqttClient.connect();
             mqttClient.subscribe("MQTTNQNTMQMQMB");
@@ -37,11 +37,20 @@ public class CallbackMqtt implements MqttCallback {
         System.out.println("Connection to MQTT broker lost!");
     }
 
-    public void messageArrived(String s, MqttMessage mqttMessage) throws IOException {
-        System.out.println("Message sdrthyjuki received:\n\t"+ new String(mqttMessage.getPayload()) );
+    public void messageArrived(String s, MqttMessage mqttMessage) {
+        System.out.println("Message received:\n\t"+ new String(mqttMessage.getPayload()) );
+
         ObjectMapper objectMapper = new ObjectMapper();
+
         Map<String, Object> map;
-        map = objectMapper.readValue(mqttMessage.getPayload(), new TypeReference<Object>(){});
+
+        try {
+            map = objectMapper.readValue(mqttMessage.getPayload(), new TypeReference<Object>(){});
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
         Data result = Data.builder()
                 .INDEX_C1((Integer) map.get("INDEX_C1"))
                 .INDEX_C2((Integer) map.get("INDEX_C2"))
@@ -53,6 +62,7 @@ public class CallbackMqtt implements MqttCallback {
                 .T2_PAPP((Integer) map.get("T2_PAPP"))
                 .T2_PTEC((String) map.get("T2_PTEC"))
                 .build();
+
         Point currentPoint = Point.measurement("info")
                 .time(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
                 .addField("product", result.getProduct())
@@ -65,13 +75,12 @@ public class CallbackMqtt implements MqttCallback {
                 .addField("INDEX_C1", result.getINDEX_C1())
                 .addField("INDEX_C2", result.getINDEX_C2())
                 .build();
-        influxDB.write(currentPoint);
-        System.out.println('L');
         try {
-            mqttClient.disconnect();
-        } catch (MqttException e) {
+            influxDB.write(currentPoint);
+        } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {

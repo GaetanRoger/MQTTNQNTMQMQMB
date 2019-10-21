@@ -2,7 +2,7 @@ import org.influxdb.InfluxDB;
 
 import java.util.TimerTask;
 
-public class TarsomèresHandler extends TimerTask {
+public class TarsomèresHandler {
 
     private final InfluxDB influxDB;
 

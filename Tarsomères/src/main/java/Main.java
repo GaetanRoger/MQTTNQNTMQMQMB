@@ -15,7 +15,7 @@ public class Main {
         }
         final String dbName = "data";
         influxDB.query(new Query("CREATE DATABASE " + dbName));
-        Timer timer = new Timer();
-        timer.schedule(new TarsomèresHandler(influxDB), 0, 5000);
+        influxDB.setDatabase(dbName);
+        new TarsomèresHandler(influxDB).run();
     }
 }
