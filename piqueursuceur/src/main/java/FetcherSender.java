@@ -16,18 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class FetcherSender extends TimerTask {
     @Override
     public void run() {
-        // String str = fetch();
-        String str = "{\n" +
-                "\"product\": \"Eco-devices\",\n" +
-                "\"T1_PTEC\": \"TH..\",\n" +
-                "\"T1_PAPP\": 130,\n" +
-                "\"T1_BASE\": 1875395,\n" +
-                "\"T2_PTEC\": \"----\",\n" +
-                "\"T2_PAPP\": 0,\n" +
-                "\"T2_BASE\": 0,\n" +
-                "\"INDEX_C1\": 784482,\n" +
-                "\"INDEX_C2\": 10818\n" +
-                "}";
+        String str = fetch();
+
         if (!str.isEmpty()) {
             send(str);
         }
@@ -41,7 +31,6 @@ public class FetcherSender extends TimerTask {
             HttpResponse response = client.execute(request);
             HttpEntity entity = response.getEntity();
 
-            // Read the contents of an entity and return it as a String.
             return EntityUtils.toString(entity);
         } catch (IOException e) {
             System.out.println("Unable to read data from site: " + e.getMessage());
@@ -54,7 +43,7 @@ public class FetcherSender extends TimerTask {
         try {
             publish(message);
         } catch (final MqttException e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
